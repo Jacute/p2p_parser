@@ -3,19 +3,17 @@ import json
 from datetime import datetime
 
 from selenium import webdriver
-from selenium.webdriver import ActionChains
-from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
-import subprocess
+from selenium.webdriver.chrome.service import Service
 import traceback
 import requests
 import time
 import sys
-from random import random
+# from random import random
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
-import re
+# import re
 
 
 software_names = [SoftwareName.CHROME.value]
@@ -31,10 +29,10 @@ def get_driver():
                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 OPR/73.0.3856.415 (Edition Yx GX)")
 
         options.set_preference("dom.webdriver.enabled", False)
-        # options.headless = True
+        options.headless = True
 
         driver = webdriver.Firefox(
-            executable_path=GeckoDriverManager().install(),
+            service=Service(ChromeDriverManager().install()),
             options=options
         )
         driver.implicitly_wait(5)
@@ -106,6 +104,7 @@ def main():
            'Kucoin': {'USDT': {}, 'BTC': {}, 'ETH': {}, 'USDC': {}},
            'Bybit': {'USDT': {}, 'BTC': {}, 'ETH': {}},
            'Huobi': {'USDT': {}, 'BTC': {}, 'ETH': {}},
+           'Bitpapa': {'USDT': {}, 'BTC': {}, 'ETH': {}},
            'Garantex': {'USDT': {}, 'BTC': {}, 'ETH': {}, 'USDC': {}}}
     for i in ['BTC', 'USDT', 'ETH']:
         for j in ['BUY', 'SELL']:
