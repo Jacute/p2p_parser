@@ -24,18 +24,24 @@ user_agent_rotator = UserAgent(software_names=software_names, operating_systems=
 
 def get_driver():
     try:
-        options = webdriver.FirefoxOptions()
-        options.set_preference("general.useragent.override",
-                               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 OPR/73.0.3856.415 (Edition Yx GX)")
+        options = webdriver.ChromeOptions()
 
-        options.set_preference("dom.webdriver.enabled", False)
+        # user-agent
+        options.add_argument("user-agent=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0")
+
+        # for ChromeDriver version 79.0.3945.16 or over
+        options.add_argument("--disable-blink-features=AutomationControlled")
+
+        # headless mode
+        # options.add_argument("--headless")
         options.headless = True
 
-        driver = webdriver.Firefox(
+        driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()),
             options=options
         )
         driver.implicitly_wait(5)
+        driver.set_window_size(1920, 1080)
         return driver
     except Exception as e:
         print('Неудачная настройка браузера!')
@@ -151,7 +157,7 @@ def main():
                 'X-Access-Token': '5ZJffp7DTcFoFjknaVT-'
             }
             price = parse_bitpapa(
-                f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&type=sell&page=1&sort=price&currency_code=RUB&previous_currency_code=RUB&crypto_currency_code=ETH&with_correct_limits=false&limit=20',
+                f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&type={j}&page=1&sort=price&currency_code=RUB&previous_currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&limit=20',
                 headers)
             dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': price}}
     btc_prices = parse_garantex('btcrub')
@@ -167,7 +173,7 @@ def main():
     dct['time'] = str(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     with open('result.json', 'w') as f:
         json.dump(dct, f)
-    print('Результаты успешно сохранены в result.json')
+    print('Результаты успешно сохранены в result.json', dct['time'])
 
 
 if __name__ == '__main__':
