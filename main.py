@@ -2,10 +2,6 @@
 import json
 from datetime import datetime
 
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 import traceback
 import requests
 import time
@@ -20,34 +16,6 @@ software_names = [SoftwareName.CHROME.value]
 operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]
 
 user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
-
-
-def get_driver():
-    try:
-        options = webdriver.ChromeOptions()
-
-        # user-agent
-        options.add_argument("user-agent=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0")
-
-        # for ChromeDriver version 79.0.3945.16 or over
-        options.add_argument("--disable-blink-features=AutomationControlled")
-
-        # headless mode
-        # options.add_argument("--headless")
-        options.headless = True
-
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=options
-        )
-        driver.implicitly_wait(5)
-        driver.set_window_size(1920, 1080)
-        return driver
-    except Exception as e:
-        print('Неудачная настройка браузера!')
-        print(traceback.format_exc())
-        print(input('Нажмите ENTER, чтобы закрыть эту программу'))
-        sys.exit()
 
 
 def parse_binance(url, headers, data):
@@ -95,14 +63,7 @@ def parse_huobi(url, headers):
 
 
 def parse_garantex(wallet):
-    driver.get(f'https://garantex.io/trading/{wallet}')
-    btn = driver.find_element(By.XPATH, f'//a[@id="{wallet}_tab"]')
-    btn.click()
-    tmp = driver.find_elements(By.XPATH, f'//tbody[@class="table table-hover {wallet}_ask asks"]/tr')[-1]
-    sell_price = float(tmp.find_element(By.XPATH, './td').text.replace(' ', ''))
-    tmp = driver.find_elements(By.XPATH, f'//tbody[@class="table table-hover {wallet}_bid bids"]/tr')[-1]
-    buy_price = float(tmp.find_element(By.XPATH, './td').text.replace(' ', ''))
-    return (buy_price, sell_price)
+    pass
 
 
 def main():
@@ -157,19 +118,10 @@ def main():
                 'X-Access-Token': '5ZJffp7DTcFoFjknaVT-'
             }
             price = parse_bitpapa(
-                f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&type={j}&page=1&sort=price&currency_code=RUB&previous_currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&limit=20',
+                f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&sort={"" if j == "sell" else "-"}price&type={j}&page=1&limit=20&previous_currency_code=RUB&pages=23&total=20',
                 headers)
             dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': price}}
-    btc_prices = parse_garantex('btcrub')
-    if btc_prices == ('', ''):
-        time.sleep(11111)
-    eth_prices = parse_garantex('ethrub')
-    usdt_prices = parse_garantex('usdtrub')
-    usdc_prices = parse_garantex('usdcrub')
-    dct['Garantex'] = {'BTC': {'BUY': btc_prices[0], 'SELL': btc_prices[1]},
-                       'ETH': {'BUY': eth_prices[0], 'SELL': eth_prices[1]},
-                       'USDT': {'BUY': usdt_prices[0], 'SELL': usdt_prices[1]},
-                       'USDC': {'BUY': usdc_prices[0], 'SELL': usdc_prices[1]}}
+
     dct['time'] = str(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     with open('result.json', 'w') as f:
         json.dump(dct, f)
@@ -177,12 +129,8 @@ def main():
 
 
 if __name__ == '__main__':
-    driver = get_driver()
     while True:
         try:
             main()
         except Exception:
             print(traceback.format_exc())
-            driver.close()
-            driver.quit()
-            driver = get_driver()
