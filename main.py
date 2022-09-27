@@ -22,7 +22,8 @@ def parse_binance(url, headers, data):
     src = requests.post(url, headers=headers, json=data).text
     json_ = json.loads(src)
     price = json_['data'][0]['adv']['price']
-    return price
+    binance_url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={json_["data"][0]["advertiser"]["userNo"]}'
+    return price, binance_url
 
 
 def parse_kucoin(url, headers):
@@ -38,7 +39,6 @@ def parse_bitpapa(url, headers):
     src = requests.get(
         url,
         headers=headers).text
-    print(src)
     json_ = json.loads(src)
     price = json_['ads'][0]['price']
     return price
@@ -62,17 +62,12 @@ def parse_huobi(url, headers):
     return price
 
 
-def parse_garantex(wallet):
-    pass
-
-
 def main():
     dct = {'Binance': {'USDT': {}, 'BTC': {}, 'ETH': {}},
            'Kucoin': {'USDT': {}, 'BTC': {}, 'ETH': {}, 'USDC': {}},
            'Bybit': {'USDT': {}, 'BTC': {}, 'ETH': {}},
            'Huobi': {'USDT': {}, 'BTC': {}, 'ETH': {}},
-           'Bitpapa': {'USDT': {}, 'BTC': {}, 'ETH': {}},
-           'Garantex': {'USDT': {}, 'BTC': {}, 'ETH': {}, 'USDC': {}}}
+           'Bitpapa': {'USDT': {}, 'BTC': {}, 'ETH': {}}}
     for i in ['BTC', 'USDT', 'ETH']:
         for j in ['BUY', 'SELL']:
             user_agent = user_agent_rotator.get_random_user_agent()
@@ -94,14 +89,14 @@ def main():
             }
             data['asset'] = i
             data['tradeType'] = j
-            price = parse_binance('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', headers, data)
-            dct['Binance'] = {**dct['Binance'], i: {**dct['Binance'][i], j: price}}
+            price, binance_url = parse_binance('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', headers, data)
+            dct['Binance'] = {**dct['Binance'], i: {**dct['Binance'][i], j: {'price': float(price), 'url': binance_url}}}
 
             price = parse_bybit(f'https://api2.bybit.com/spot/api/otc/item/list/?userId=&tokenId={i}&currencyId=RUB&payment=&side={0 if j == "SELL" else 1}&size=10&page=1&amount=', headers)
-            dct['Bybit'] = {**dct['Bybit'], i: {**dct['Bybit'][i], j: price}}
+            dct['Bybit'] = {**dct['Bybit'], i: {**dct['Bybit'][i], j: float(price)}}
 
             price = parse_huobi(f'https://otc-api.ri16.com/v1/data/trade-market?coinId={["BTC", "USDT", "ETH"].index(i) + 1}&currency=11&tradeType={"sell" if j == "BUY" else "buy"}&currPage=1&payMethod=0&acceptOrder=-1&country=&blockType=general&online=1&range=0&amount=&onlyTradable=false', headers)
-            dct['Huobi'] = {**dct['Huobi'], i: {**dct['Huobi'][i], j: price}}
+            dct['Huobi'] = {**dct['Huobi'], i: {**dct['Huobi'][i], j: float(price)}}
 
     for i in ['USDT', 'BTC', 'ETH', 'USDC']:
         for j in ['SELL', 'BUY']:
@@ -110,7 +105,7 @@ def main():
                 'user_agent': user_agent,
             }
             price = parse_kucoin(f'https://www.kucoin.com/_api/otc/ad/list?currency={i}&side={j}&legal=RUB&page=1&pageSize=10&status=PUTUP&lang=ru_RU', headers)
-            dct['Kucoin'] = {**dct['Kucoin'], i: {**dct['Kucoin'][i], 'SELL' if j == 'BUY' else 'BUY': price}}
+            dct['Kucoin'] = {**dct['Kucoin'], i: {**dct['Kucoin'][i], 'SELL' if j == 'BUY' else 'BUY': float(price)}}
     for i in ['USDT', 'BTC', 'ETH']:
         for j in ['sell', 'buy']:
             headers = {
@@ -120,7 +115,7 @@ def main():
             price = parse_bitpapa(
                 f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&sort={"" if j == "sell" else "-"}price&type={j}&page=1&limit=20&previous_currency_code=RUB&pages=23&total=20',
                 headers)
-            dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': price}}
+            dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': float(price)}}
 
     dct['time'] = str(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     with open('result.json', 'w') as f:
