@@ -6,6 +6,7 @@ import traceback
 import requests
 import time
 import sys
+import signal
 # from random import random
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
@@ -123,7 +124,13 @@ def main():
     print('Результаты успешно сохранены в result.json', dct['time'])
 
 
+def signal_handler(signum, frame):
+    raise Exception("Timed out!")
+
+
 if __name__ == '__main__':
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(10)
     while True:
         try:
             main()
