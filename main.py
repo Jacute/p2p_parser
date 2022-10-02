@@ -10,7 +10,11 @@ import signal
 # from random import random
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
-# import re
+import signal
+from contextlib import contextmanager
+
+
+class TimeoutException(Exception): pass
 
 
 software_names = [SoftwareName.CHROME.value]
@@ -124,15 +128,24 @@ def main():
     print('Результаты успешно сохранены в result.json', dct['time'])
 
 
-def signal_handler(signum, frame):
-    raise Exception("Timed out!")
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(10)
     while True:
         try:
-            main()
+            with time_limit(10):
+                main()
+        except TimeoutException as e:
+            print("Timed out!")
         except Exception:
             print(traceback.format_exc())
