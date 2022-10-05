@@ -4,10 +4,6 @@ from datetime import datetime
 
 import traceback
 import requests
-import time
-import sys
-import signal
-# from random import random
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 import signal
