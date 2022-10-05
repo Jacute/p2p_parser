@@ -27,8 +27,8 @@ def parse_binance(url, headers, data):
     src = requests.post(url, headers=headers, json=data).text
     json_ = json.loads(src)
     price = json_['data'][0]['adv']['price']
-    binance_url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={json_["data"][0]["advertiser"]["userNo"]}'
-    return price, binance_url
+    url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={json_["data"][0]["advertiser"]["userNo"]}'
+    return price, url
 
 
 def parse_kucoin(url, headers):
@@ -46,7 +46,8 @@ def parse_bitpapa(url, headers):
         headers=headers).text
     json_ = json.loads(src)
     price = json_['ads'][0]['price']
-    return price
+    url = f'https://bitpapa.com/trade/new/{json_["ads"][0]["id"]}'
+    return price, url
 
 
 def parse_bybit(url, headers):
@@ -94,8 +95,8 @@ def main():
             }
             data['asset'] = i
             data['tradeType'] = j
-            price, binance_url = parse_binance('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', headers, data)
-            dct['Binance'] = {**dct['Binance'], i: {**dct['Binance'][i], j: {'price': float(price), 'url': binance_url}}}
+            price, url = parse_binance('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', headers, data)
+            dct['Binance'] = {**dct['Binance'], i: {**dct['Binance'][i], j: {'price': float(price), 'url': url}}}
 
             price = parse_bybit(f'https://api2.bybit.com/spot/api/otc/item/list/?userId=&tokenId={i}&currencyId=RUB&payment=&side={0 if j == "SELL" else 1}&size=10&page=1&amount=', headers)
             dct['Bybit'] = {**dct['Bybit'], i: {**dct['Bybit'][i], j: float(price)}}
@@ -117,10 +118,10 @@ def main():
                 'Content-Type': 'application/json',
                 'X-Access-Token': '5ZJffp7DTcFoFjknaVT-'
             }
-            price = parse_bitpapa(
+            price, url = parse_bitpapa(
                 f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&sort={"" if j == "sell" else "-"}price&type={j}&page=1&limit=20&previous_currency_code=RUB&pages=23&total=20',
                 headers)
-            dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': float(price)}}
+            dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': {'price': float(price), 'url': url}}}
 
     dct['time'] = str(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     with open('result.json', 'w') as f:
