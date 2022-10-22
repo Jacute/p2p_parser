@@ -22,8 +22,12 @@ user_agent_rotator = UserAgent(software_names=software_names, operating_systems=
 def parse_binance(url, headers, data):
     src = requests.post(url, headers=headers, json=data).text
     json_ = json.loads(src)
-    price = json_['data'][0]['adv']['price']
-    url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={json_["data"][0]["advertiser"]["userNo"]}'
+    price, url = '', ''
+    for i in json_['data']:
+        if i['adv']['tradeMethods']['tradeMethodName'] in binance_banks:
+            price = i['adv']['price']
+            url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={i["advertiser"]["userNo"]}'
+            break
     return price, url
 
 
@@ -86,7 +90,7 @@ def main():
                 'payTypes': [],
                 'proMerchantAds': False,
                 'publisherType': None,
-                'rows': 10,
+                'rows': 100,
                 'tradeType': None
             }
             data['asset'] = i
@@ -138,6 +142,7 @@ def time_limit(seconds):
 
 
 if __name__ == '__main__':
+    binance_banks = ['RosBank', 'Raiffeisenbank', 'Post', 'Bank', 'BCS', 'Bank', 'QIWI', 'Tinkoff', 'Uralsib', 'Bank', 'MTS-Bank']
     while True:
         try:
             with time_limit(10):
