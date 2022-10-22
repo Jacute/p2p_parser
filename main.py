@@ -84,13 +84,13 @@ def main():
             }
             data = {
                 'asset': None,
-                'countries': [],
+                'countries': ['RU'],
                 'fiat': "RUB",
                 'page': 1,
                 'payTypes': [],
                 'proMerchantAds': False,
                 'publisherType': None,
-                'rows': 100,
+                'rows': 10,
                 'tradeType': None
             }
             data['asset'] = i
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     binance_banks = ['RosBank', 'Raiffeisenbank', 'Post', 'Bank', 'BCS', 'Bank', 'QIWI', 'Tinkoff', 'Uralsib', 'Bank', 'MTS-Bank']
     while True:
         try:
-            with time_limit(10):
+            with time_limit(120):
                 main()
         except TimeoutException as e:
             print("Timed out!")
