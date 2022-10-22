@@ -84,10 +84,10 @@ def main():
             }
             data = {
                 'asset': None,
-                'countries': ['RU'],
+                'countries': [],
                 'fiat': "RUB",
                 'page': 1,
-                'payTypes': [],
+                'payTypes': binance_banks,
                 'proMerchantAds': False,
                 'publisherType': None,
                 'rows': 10,
@@ -142,7 +142,7 @@ def time_limit(seconds):
 
 
 if __name__ == '__main__':
-    binance_banks = ['RosBank', 'Raiffeisenbank', 'Post', 'Bank', 'BCS', 'Bank', 'QIWI', 'Tinkoff', 'Uralsib', 'Bank', 'MTS-Bank']
+    binance_banks = ['RosBankNew', 'RaiffeisenBank', 'PostBankNew', 'BCSBank', 'QIWI', 'TinkoffNew', 'UralsibBank', 'MTSBank']
     while True:
         try:
             with time_limit(120):
