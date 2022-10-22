@@ -22,12 +22,8 @@ user_agent_rotator = UserAgent(software_names=software_names, operating_systems=
 def parse_binance(url, headers, data):
     src = requests.post(url, headers=headers, json=data).text
     json_ = json.loads(src)
-    price, url = '', ''
-    for i in json_['data']:
-        if i['adv']['tradeMethods']['tradeMethodName'] in binance_banks:
-            price = i['adv']['price']
-            url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={i["advertiser"]["userNo"]}'
-            break
+    price = json_['data'][0]['adv']['price']
+    url = f'https://p2p.binance.com/en/advertiserDetail?advertiserNo={json_["data"][0]["advertiser"]["userNo"]}'
     return price, url
 
 
