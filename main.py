@@ -97,7 +97,7 @@ def main():
             price = parse_bybit(f'https://api2.bybit.com/spot/api/otc/item/list/?userId=&tokenId={i}&currencyId=RUB&payment=&side={0 if j == "SELL" else 1}&size=10&page=1&amount=', headers)
             dct['Bybit'] = {**dct['Bybit'], i: {**dct['Bybit'][i], j: float(price)}}
 
-            price = parse_huobi(f'https://otc-api.ri16.com/v1/data/trade-market?coinId={["BTC", "USDT", "ETH"].index(i) + 1}&currency=11&tradeType={"sell" if j == "BUY" else "buy"}&currPage=1&payMethod=0&acceptOrder=-1&country=&blockType=general&online=1&range=0&amount=&onlyTradable=false', headers)
+            price = parse_huobi(f'https://otc-api.trygofast.com/v1/data/trade-market?coinId={["BTC", "USDT", "ETH"].index(i) + 1}&currency=11&tradeType={"sell" if j == "BUY" else "buy"}&currPage=1&payMethod=0&acceptOrder=-1&country=&blockType=general&online=1&range=0&amount=&onlyTradable=false&isFollowed=false', headers)
             dct['Huobi'] = {**dct['Huobi'], i: {**dct['Huobi'][i], j: float(price)}}
 
     for i in ['USDT', 'BTC', 'ETH', 'USDC']:
@@ -114,10 +114,10 @@ def main():
                 'Content-Type': 'application/json',
                 'X-Access-Token': '5ZJffp7DTcFoFjknaVT-'
             }
-            price, url = parse_bitpapa(
-                f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&sort={"" if j == "sell" else "-"}price&type={j}&page=1&limit=20&previous_currency_code=RUB&pages=23&total=20',
-                headers)
-            dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': {'price': float(price), 'url': url}}}
+            # price, url = parse_bitpapa(
+            #     f'https://bitpapa.com/api/v1/pro/search?crypto_amount=&currency_code=RUB&crypto_currency_code={i}&with_correct_limits=false&sort={"" if j == "sell" else "-"}price&type={j}&page=1&limit=20&previous_currency_code=RUB&pages=23&total=20',
+            #     headers)
+            # dct['Bitpapa'] = {**dct['Bitpapa'], i: {**dct['Bitpapa'][i], 'SELL' if j == 'buy' else 'BUY': {'price': float(price), 'url': url}}}
 
     dct['time'] = str(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
     with open('result.json', 'w') as f:
